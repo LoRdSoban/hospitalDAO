@@ -4,10 +4,11 @@
 ;; errors
 ;;
 (define-constant UNAUTH_CALLER (err u001))
-(define-constant AUTH_CALLER_DOESNT_EXIST (err u010))
-(define-constant PATIENT_ALREADY_EXISTS (err u011))
-(define-constant PATIENT_DOESNT_EXISTS (err u100))
-(define-constant INVALID_GENDER (err u101))
+(define-constant AUTH_CALLER_ALREADY_EXISTS (err u010))
+(define-constant AUTH_CALLER_DOESNT_EXIST (err u011))
+(define-constant PATIENT_ALREADY_EXISTS (err u100))
+(define-constant PATIENT_DOESNT_EXISTS (err u101))
+(define-constant INVALID_GENDER (err u110))
 
 ;; constants
 ;;
@@ -55,6 +56,23 @@ false)))
 
 ;; check if the funtion is called by admin or not
 (asserts! (is-eq tx-sender admin) UNAUTH_CALLER)
+
+;; checks if auth caller already exists or not 
+(asserts! (is-eq (is-none (map-get? authorised_callers {address: address})) true) AUTH_CALLER_ALREADY_EXISTS)
+
+(ok (map-set authorised_callers {address: address} {authorised: authorised}))
+
+)
+)
+
+(define-public (delete_authosrised_caller (address principal) (authorised bool))
+(begin
+
+;; check if the funtion is called by admin or not
+(asserts! (is-eq tx-sender admin) UNAUTH_CALLER)
+
+;; checks if auth caller already exists or not 
+(asserts! (is-eq (is-some (map-get? authorised_callers {address: address})) true) AUTH_CALLER_DOESNT_EXIST)
 
 (ok (map-set authorised_callers {address: address} {authorised: authorised}))
 
@@ -106,6 +124,7 @@ false)))
 
 )
 )
+
 
 
 ;; read-only funtions
