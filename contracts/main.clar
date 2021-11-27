@@ -138,7 +138,7 @@ false)))
 
 
 
-(define-public (set-appointment (name principal) (department uint) (d (string-ascii 10)) (t uint ))
+(define-public (set-appointment (name principal) (department uint) (date (string-ascii 10)) (t uint ))
 
     (begin
     
@@ -150,7 +150,7 @@ false)))
 
             (asserts! (> u20 (var-get radiology-app-number )) (err "radiology no more appointments"))
 
-            (map-set radiology {appointment_number: (var-get radiology-app-number)} {id: name, time: t, date: d})
+            (map-set radiology {appointment_number: (var-get radiology-app-number)} {id: name, time: t, date: date})
             (var-set radiology-app-number (+ (var-get radiology-app-number) u1))
             (ok true)
         )
@@ -160,7 +160,7 @@ false)))
 
             (asserts! (> u20 (var-get dentist-app-number )) (err "no more appointments"))
 
-            (map-set dentist {appointment_number: (var-get dentist-app-number)} {id: name, time: t, date: d})
+            (map-set dentist {appointment_number: (var-get dentist-app-number)} {id: name, time: t, date: date})
             (var-set dentist-app-number (+ (var-get dentist-app-number) u1))
             (ok true)   
         )
@@ -170,7 +170,7 @@ false)))
 
             (asserts! (> u20 (var-get general-physician-app-number )) (err "no more appointments"))
 
-            (map-set general-physician {appointment_number: (var-get general-physician-app-number)} {id: name, time: t, date: d})
+            (map-set general-physician {appointment_number: (var-get general-physician-app-number)} {id: name, time: t, date: date})
             (var-set general-physician-app-number (+ (var-get general-physician-app-number) u1))
             (ok true)
         )
