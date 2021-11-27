@@ -3,22 +3,32 @@
 
 ;; errors
 ;;
-(define-constant UNAUTH_CALLER (err u001))
-(define-constant AUTH_CALLER_ALREADY_EXISTS (err u010))
-(define-constant AUTH_CALLER_DOESNT_EXIST (err u011))
-(define-constant PATIENT_ALREADY_EXISTS (err u100))
-(define-constant PATIENT_DOESNT_EXISTS (err u101))
-(define-constant INVALID_GENDER (err u110))
+(define-constant UNAUTH_CALLER (err "Unauthorised Caller"))
+(define-constant AUTH_CALLER_ALREADY_EXISTS (err "Authorised record already exists"))
+(define-constant AUTH_CALLER_DOESNT_EXIST (err "Authorised record doesn't exists"))
+(define-constant PATIENT_ALREADY_EXISTS (err "Patient record already exists"))
+(define-constant PATIENT_DOESNT_EXISTS (err "Patient record doesn't exists"))
+(define-constant INVALID_GENDER (err "Invalid gender option entered"))
 
 ;; constants
 ;;
 (define-constant admin 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM)
 
+
 ;; data maps and vars
 ;;
 (define-map authorised_callers {address: principal} {authorised: bool})
 (define-map patient_data {id: principal} {name: (string-ascii 20), gender: (string-ascii 1), age: uint, contactNo: uint})
-(define-map appointments {doctor_id: principal} {patient_id: principal, date: (string-ascii 10)})
+;;(define-map appointments {doctor_id: principal} {patient_id: principal, date: (string-ascii 10)})
+
+(define-data-var radiology-app-number uint u0)
+(define-data-var dentist-app-number uint u0)
+(define-data-var general-physician-app-number uint u0)
+
+(define-map radiology {appointment_number: uint} {id: principal, time: uint, date: (string-ascii 10)} )
+(define-map dentist {appointment_number: uint} {id: principal, time: uint, date: (string-ascii 10)} )
+(define-map general-physician {appointment_number: uint} {id: principal, time: uint, date: (string-ascii 10)} )
+
 
 ;; private functions
 ;;
@@ -127,4 +137,113 @@ false)))
 
 
 
+(define-public (set-appointment (name principal) (department uint) (d (string-ascii 10)) (t uint ))
+
+    (begin
+    
+        (asserts! (is-eq (is-none (map-get? patient_data {id: name}) ) true) (err "patient doesnt exist")) 
+        
+        
+        (if (is-eq department u0)
+        (begin
+
+            (asserts! (> u20 (var-get radiology-app-number )) (err "radiology no more appointments"))
+
+            (map-set radiology {appointment_number: (var-get radiology-app-number)} {id: name, time: t, date: d})
+            (var-set radiology-app-number (+ (var-get radiology-app-number) u1))
+            (ok true)
+        )
+        
+        (if (is-eq department u1)
+        (begin 
+
+            (asserts! (> u20 (var-get dentist-app-number )) (err "no more appointments"))
+
+            (map-set dentist {appointment_number: (var-get dentist-app-number)} {id: name, time: t, date: d})
+            (var-set dentist-app-number (+ (var-get dentist-app-number) u1))
+            (ok true)   
+        )
+                    
+        (if (is-eq department u2)
+        (begin  
+
+            (asserts! (> u20 (var-get general-physician-app-number )) (err "no more appointments"))
+
+            (map-set general-physician {appointment_number: (var-get general-physician-app-number)} {id: name, time: t, date: d})
+            (var-set general-physician-app-number (+ (var-get general-physician-app-number) u1))
+            (ok true)
+        )
+
+            (err "select a number between u0 - u2")
+        )
+        )
+        )
+
+    )
+)
+
+(define-public (delete-appointment (department uint) (app_num uint))
+
+    (begin
+        
+        
+        (if (is-eq department u0)
+        (begin
+
+            (asserts! (< u0 (var-get radiology-app-number )) (err "no radiology appointments"))
+
+            (map-delete radiology {appointment_number: app_num})
+            (var-set radiology-app-number (- (var-get radiology-app-number) u1))
+            (ok true)
+        )
+        
+        (if (is-eq department u1)
+        (begin 
+
+            (asserts! (< u0 (var-get dentist-app-number )) (err "no dentist appointments"))
+
+            (map-delete dentist {appointment_number: app_num})
+            (var-set dentist-app-number (- (var-get dentist-app-number) u1))
+            (ok true)   
+        )
+                    
+        (if (is-eq department u2)
+        (begin
+
+            (asserts! (< u0 (var-get general-physician-app-number )) (err "no general physician appointments"))  
+
+            (map-delete general-physician {appointment_number: app_num})
+            (var-set general-physician-app-number (- (var-get general-physician-app-number) u1))
+            (ok true)
+        )
+
+            (err "select a number between u0 - u2")
+        )
+        )
+        )
+
+    )
+)
+
+
 ;; read-only funtions
+
+(define-read-only (read_patient_data (id principal))
+(begin
+
+(asserts! (is-eq (is_auth_caller) true) UNAUTH_CALLER)
+(ok (unwrap! (map-get? patient_data {id: id}) PATIENT_DOESNT_EXISTS))
+
+)
+)
+
+(define-read-only (ppp)
+(begin
+
+(asserts! (is-eq (is_auth_caller) true) UNAUTH_CALLER)
+(ok true)
+
+)
+)
+
+(define-read-only (read_r) (ok (var-get dentist-app-number)))
