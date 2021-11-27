@@ -9,6 +9,7 @@
 (define-constant PATIENT_ALREADY_EXISTS (err "Patient record already exists"))
 (define-constant PATIENT_DOESNT_EXISTS (err "Patient record doesn't exists"))
 (define-constant INVALID_GENDER (err "Invalid gender option entered"))
+(define-constant APP_DOESNT_EXISTS (err "Appointment doesn't exists"))
 
 ;; constants
 ;;
@@ -237,13 +238,50 @@ false)))
 )
 )
 
-(define-read-only (ppp)
+(define-read-only (check_radiology_app (app_num uint))
 (begin
 
 (asserts! (is-eq (is_auth_caller) true) UNAUTH_CALLER)
-(ok true)
+(ok (unwrap! (map-get? radiology {appointment_number: app_num}) APP_DOESNT_EXISTS))
 
 )
 )
 
-(define-read-only (read_r) (ok (var-get dentist-app-number)))
+(define-read-only (check_dentist_app (app_num uint))
+(begin
+
+(asserts! (is-eq (is_auth_caller) true) UNAUTH_CALLER)
+(ok (unwrap! (map-get? dentist {appointment_number: app_num}) APP_DOESNT_EXISTS))
+
+)
+)
+
+(define-read-only (check_general_physician_app (app_num uint))
+(begin
+
+(asserts! (is-eq (is_auth_caller) true) UNAUTH_CALLER)
+(ok (unwrap! (map-get? general-physician {appointment_number: app_num}) APP_DOESNT_EXISTS))
+
+)
+)
+
+(define-read-only (read_radiology_app_number) 
+
+(var-get radiology-app-number)
+
+)
+
+
+(define-read-only (read_dentist_app_number) 
+
+(var-get dentist-app-number)
+
+)
+
+
+(define-read-only (read_general_physician_app_number) 
+
+(var-get general-physician-app-number)
+
+)
+
