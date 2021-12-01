@@ -22,9 +22,9 @@
 (define-map patient_data {id: principal} {name: (string-ascii 20), gender: (string-ascii 1), age: uint, contactNo: uint})
 ;;(define-map appointments {doctor_id: principal} {patient_id: principal, date: (string-ascii 10)})
 
-(define-data-var radiology-app-number uint u0)
-(define-data-var dentist-app-number uint u0)
-(define-data-var general-physician-app-number uint u0)
+(define-data-var radiology_app_number uint u0)
+(define-data-var dentist_app_number uint u0)
+(define-data-var general_physician_app_number uint u0)
 
 (define-map radiology {appointment_number: uint} {id: principal, time: uint, date: (string-ascii 10)} )
 (define-map dentist {appointment_number: uint} {id: principal, time: uint, date: (string-ascii 10)} )
@@ -148,30 +148,30 @@ false)))
         (if (is-eq department u0)
         (begin
 
-            (asserts! (> u20 (var-get radiology-app-number )) (err "radiology no more appointments"))
+            (asserts! (> u20 (var-get radiology_app_number )) (err "radiology no more appointments"))
 
-            (map-set radiology {appointment_number: (var-get radiology-app-number)} {id: name, time: t, date: date})
-            (var-set radiology-app-number (+ (var-get radiology-app-number) u1))
+            (map-set radiology {appointment_number: (var-get radiology_app_number)} {id: name, time: t, date: date})
+            (var-set radiology_app_number (+ (var-get radiology_app_number) u1))
             (ok true)
         )
         
         (if (is-eq department u1)
         (begin 
 
-            (asserts! (> u20 (var-get dentist-app-number )) (err "no more appointments"))
+            (asserts! (> u20 (var-get dentist_app_number )) (err "no more appointments"))
 
-            (map-set dentist {appointment_number: (var-get dentist-app-number)} {id: name, time: t, date: date})
-            (var-set dentist-app-number (+ (var-get dentist-app-number) u1))
+            (map-set dentist {appointment_number: (var-get dentist_app_number)} {id: name, time: t, date: date})
+            (var-set dentist_app_number (+ (var-get dentist_app_number) u1))
             (ok true)   
         )
                     
         (if (is-eq department u2)
         (begin  
 
-            (asserts! (> u20 (var-get general-physician-app-number )) (err "no more appointments"))
+            (asserts! (> u20 (var-get general_physician_app_number )) (err "no more appointments"))
 
-            (map-set general-physician {appointment_number: (var-get general-physician-app-number)} {id: name, time: t, date: date})
-            (var-set general-physician-app-number (+ (var-get general-physician-app-number) u1))
+            (map-set general-physician {appointment_number: (var-get general_physician_app_number)} {id: name, time: t, date: date})
+            (var-set general_physician_app_number (+ (var-get general_physician_app_number) u1))
             (ok true)
         )
 
@@ -191,30 +191,30 @@ false)))
         (if (is-eq department u0)
         (begin
 
-            (asserts! (< u0 (var-get radiology-app-number )) (err "no radiology appointments"))
+            (asserts! (< u0 (var-get radiology_app_number )) (err "no radiology appointments"))
 
             (map-delete radiology {appointment_number: app_num})
-            (var-set radiology-app-number (- (var-get radiology-app-number) u1))
+            (var-set radiology_app_number (- (var-get radiology_app_number) u1))
             (ok true)
         )
         
         (if (is-eq department u1)
         (begin 
 
-            (asserts! (< u0 (var-get dentist-app-number )) (err "no dentist appointments"))
+            (asserts! (< u0 (var-get dentist_app_number )) (err "no dentist appointments"))
 
             (map-delete dentist {appointment_number: app_num})
-            (var-set dentist-app-number (- (var-get dentist-app-number) u1))
+            (var-set dentist_app_number (- (var-get dentist_app_number) u1))
             (ok true)   
         )
                     
         (if (is-eq department u2)
         (begin
 
-            (asserts! (< u0 (var-get general-physician-app-number )) (err "no general physician appointments"))  
+            (asserts! (< u0 (var-get general_physician_app_number )) (err "no general physician appointments"))  
 
             (map-delete general-physician {appointment_number: app_num})
-            (var-set general-physician-app-number (- (var-get general-physician-app-number) u1))
+            (var-set general_physician_app_number (- (var-get general_physician_app_number) u1))
             (ok true)
         )
 
@@ -267,21 +267,21 @@ false)))
 
 (define-read-only (read_radiology_app_number) 
 
-(var-get radiology-app-number)
+(var-get radiology_app_number)
 
 )
 
 
 (define-read-only (read_dentist_app_number) 
 
-(var-get dentist-app-number)
+(var-get dentist_app_number)
 
 )
 
 
 (define-read-only (read_general_physician_app_number) 
 
-(var-get general-physician-app-number)
+(var-get general_physician_app_number)
 
 )
 
