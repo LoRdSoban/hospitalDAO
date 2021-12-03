@@ -2,6 +2,7 @@
 name = "hospitalDAO"
 requirements = []
 costs_version = 1
-[contracts.main]
-path = "contracts/main.clar"
+[contracts.hospitalDAO]
+path = "contracts/hospitalDAO.clar"
 depends_on = []
+
