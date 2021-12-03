@@ -9,6 +9,9 @@
 (define-constant PATIENT_ALREADY_EXISTS (err "Patient record already exists"))
 (define-constant PATIENT_DOESNT_EXISTS (err "Patient record doesnt exists"))
 (define-constant INVALID_GENDER (err "Invalid gender option entered"))
+(define-constant FULL_APP (err "appointments are full"))
+(define-constant EMPTY_APP (err "no appointments"))
+(define-constant APP_ALREADY_EXISTS (err "Appointment already exists"))
 (define-constant APP_DOESNT_EXISTS (err "Appointment doesnt exists"))
 
 ;; constants
@@ -19,8 +22,10 @@
 ;; data maps and vars
 ;;
 (define-map authorised_callers {address: principal} {authorised: bool})
+(map-set authorised_callers {address: 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM} {authorised: true})
+
 (define-map patient_data {id: principal} {name: (string-ascii 20), gender: (string-ascii 1), age: uint, contactNo: uint})
-;;(define-map appointments {doctor_id: principal} {patient_id: principal, date: (string-ascii 10)})
+
 
 (define-data-var radiology_app_number uint u0)
 (define-data-var dentist_app_number uint u0)
@@ -141,47 +146,62 @@ false)))
 (define-public (set-appointment (app_num uint) (name principal) (department uint) (date (string-ascii 10)) (time uint ))
 
     (begin
-    
-        (asserts! (is-eq (is-none (map-get? patient_data {id: name}) ) true) (err "patient doesnt exist")) 
+        ;; makes sure patient is already registered
+        (asserts! (is-eq (is-none (map-get? patient_data {id: name}) ) true) PATIENT_DOESNT_EXISTS) 
         
-        
+        ;; nested if statements to check which department is selected
+        ;; if-1
         (if (is-eq department u0)
-        (begin
 
-            (asserts! (> u20 (var-get radiology_app_number )) (err "radiology no more appointments"))
-            (asserts!  (is-eq (is-none (map-get? radiology {appointment_number: app_num})) true) (err "radio app already exists"))
+        ;; if-1 TRUE
+        (begin
+            ;; checks if whether appointments are already 20 or not
+            (asserts! (> u20 (var-get radiology_app_number )) FULL_APP)
+
+            ;; checks if specific appointment number is already occupied or not
+            (asserts!  (is-eq (is-none (map-get? radiology {appointment_number: app_num})) true) APP_ALREADY_EXISTS)
 
             (map-set radiology {appointment_number: (var-get radiology_app_number)} {id: name, time: time, date: date})
             (var-set radiology_app_number (+ (var-get radiology_app_number) u1))
             (ok true)
         )
-        
+        ;; if-1 FALSE
+        ;; if-2
         (if (is-eq department u1)
-        (begin 
 
-            (asserts! (> u20 (var-get dentist_app_number )) (err "no more appointments"))
-            (asserts!  (is-eq (is-none (map-get? dentist {appointment_number: app_num})) true) (err "dentist app already exists"))
+        ;; if-2 TRUE
+        (begin 
+            ;; checks if whether appointments are already 20 or not
+            (asserts! (> u20 (var-get dentist_app_number )) FULL_APP)
+
+            ;; checks if specific appointment number is already occupied or not
+            (asserts!  (is-eq (is-none (map-get? dentist {appointment_number: app_num})) true) APP_ALREADY_EXISTS)
 
             (map-set dentist {appointment_number: (var-get dentist_app_number)} {id: name, time: time, date: date})
             (var-set dentist_app_number (+ (var-get dentist_app_number) u1))
             (ok true)   
         )
-                    
+        ;; if-3 FALSE
+        ;; if-3
         (if (is-eq department u2)
-        (begin  
 
-            (asserts! (> u20 (var-get general_physician_app_number )) (err "no more appointments"))
-            (asserts!  (is-eq (is-none (map-get? general_physician {appointment_number: app_num})) true) (err "general physician app already exists"))
+        ;; if-3 TRUE
+        (begin  
+            ;; checks if whether appointments are already 20 or not
+            (asserts! (> u20 (var-get general_physician_app_number )) FULL_APP)
+
+            ;; checks if specific appointment number is already occupied or not
+            (asserts!  (is-eq (is-none (map-get? general_physician {appointment_number: app_num})) true) APP_ALREADY_EXISTS)
 
             (map-set general_physician {appointment_number: (var-get general_physician_app_number)} {id: name, time: time, date: date})
             (var-set general_physician_app_number (+ (var-get general_physician_app_number) u1))
             (ok true)
         )
-
+        ;; if-3 FALSE
             (err "select a number between u0 - u2")
-        )
-        )
-        )
+        ) ;; if-3 END
+        ) ;; if-2 END
+        ) ;; if-1 END
 
     )
 )
@@ -189,45 +209,54 @@ false)))
 (define-public (delete-appointment (department uint) (app_num uint))
 
     (begin
-        
-        
+        ;; nested if statements to check which department is selected
+        ;; if-1
         (if (is-eq department u0)
+        
+        ;; if-1 TRUE
         (begin
 
-            (asserts! (< u0 (var-get radiology_app_number )) (err "no radiology appointments"))
-            (asserts!  (is-eq (is-some (map-get? radiology {appointment_number: app_num})) true) (err "radio app doesnt exists"))
+            (asserts! (< u0 (var-get radiology_app_number )) EMPTY_APP)
+            (asserts!  (is-eq (is-some (map-get? radiology {appointment_number: app_num})) true) APP_DOESNT_EXISTS)
 
             (map-delete radiology {appointment_number: app_num})
             (var-set radiology_app_number (- (var-get radiology_app_number) u1))
             (ok true)
         )
-        
+        ;; if-1 FALSE
+        ;; if-2
         (if (is-eq department u1)
+        
+        ;; if-2 TRUE
         (begin 
 
-            (asserts! (< u0 (var-get dentist_app_number )) (err "no dentist appointments"))
-            (asserts!  (is-eq (is-some (map-get? dentist {appointment_number: app_num})) true) (err "dentist app doesnt exists"))
+            (asserts! (< u0 (var-get dentist_app_number )) EMPTY_APP)
+            (asserts!  (is-eq (is-some (map-get? dentist {appointment_number: app_num})) true) APP_DOESNT_EXISTS)
 
             (map-delete dentist {appointment_number: app_num})
             (var-set dentist_app_number (- (var-get dentist_app_number) u1))
             (ok true)   
         )
-                    
+        ;; if-2 FASLE
+        ;; if-3            
         (if (is-eq department u2)
+        
+        ;; if-3 TRUE
         (begin
 
-            (asserts! (< u0 (var-get general_physician_app_number )) (err "no general physician appointments"))  
-            (asserts!  (is-eq (is-none (map-get? general_physician {appointment_number: app_num})) true) (err "general physician app doesnt exists"))
+            (asserts! (< u0 (var-get general_physician_app_number )) EMPTY_APP)  
+            (asserts!  (is-eq (is-none (map-get? general_physician {appointment_number: app_num})) true) APP_DOESNT_EXISTS)
 
             (map-delete general_physician {appointment_number: app_num})
             (var-set general_physician_app_number (- (var-get general_physician_app_number) u1))
             (ok true)
         )
 
+        ;; if-3 FALSE
             (err "select a number between u0 - u2")
-        )
-        )
-        )
+        ) ;; if-3 END
+        ) ;; if-2 END
+        ) ;; if-1 END
 
     )
 )
@@ -244,7 +273,7 @@ false)))
 )
 )
 
-(define-read-only (check_radiology_app (app_num uint))
+(define-read-only (radiology_app_details (app_num uint))
 (begin
 
 (asserts! (is-eq (is_auth_caller) true) UNAUTH_CALLER)
@@ -253,7 +282,7 @@ false)))
 )
 )
 
-(define-read-only (check_dentist_app (app_num uint))
+(define-read-only (dentist_app_details (app_num uint))
 (begin
 
 (asserts! (is-eq (is_auth_caller) true) UNAUTH_CALLER)
@@ -262,7 +291,7 @@ false)))
 )
 )
 
-(define-read-only (check_general_physician_app (app_num uint))
+(define-read-only (general_physician_app_details (app_num uint))
 (begin
 
 (asserts! (is-eq (is_auth_caller) true) UNAUTH_CALLER)
@@ -270,6 +299,42 @@ false)))
 
 )
 )
+
+(define-read-only (check_radiology_app (app_num uint))
+
+(if (is-eq (is-none (map-get? radiology {appointment_number: app_num})) true)
+
+;; if TRUE return
+true
+;; if FALSE return
+false
+)
+)
+
+
+(define-read-only (check_dentist_app (app_num uint))
+
+(if (is-eq (is-none (map-get? dentist {appointment_number: app_num})) true)
+
+;; if TRUE return
+true
+;; if FALSE return
+false
+)
+)
+
+
+(define-read-only (check_general_physician_app (app_num uint))
+
+(if (is-eq (is-none (map-get? general_physician {appointment_number: app_num})) true)
+
+;; if TRUE return
+true
+;; if FALSE return
+false
+)
+)
+
 
 (define-read-only (read_radiology_app_number) 
 
