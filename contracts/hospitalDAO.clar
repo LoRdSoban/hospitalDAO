@@ -3,20 +3,24 @@
 
 ;; errors
 ;;
-(define-constant UNAUTH_CALLER (err "Unauthorised Caller"))
-(define-constant AUTH_CALLER_ALREADY_EXISTS (err "Authorised record already exists"))
-(define-constant AUTH_CALLER_DOESNT_EXIST (err "Authorised record doesnt exists"))
-(define-constant PATIENT_ALREADY_EXISTS (err "Patient record already exists"))
-(define-constant PATIENT_DOESNT_EXISTS (err "Patient record doesnt exists"))
-(define-constant INVALID_GENDER (err "Invalid gender option entered"))
-(define-constant FULL_APP (err "appointments are full"))
-(define-constant EMPTY_APP (err "no appointments"))
-(define-constant APP_ALREADY_EXISTS (err "Appointment already exists"))
-(define-constant APP_DOESNT_EXISTS (err "Appointment doesnt exists"))
+(define-constant UNAUTH_CALLER (err u200))
+(define-constant AUTH_CALLER_ALREADY_EXISTS (err u201))
+(define-constant AUTH_CALLER_DOESNT_EXIST (err u202))
+(define-constant PATIENT_ALREADY_EXISTS (err u203))
+(define-constant PATIENT_DOESNT_EXISTS (err u204))
+(define-constant INVALID_GENDER (err u205))
+(define-constant FULL_APP (err u206))
+(define-constant EMPTY_APP (err u207))
+(define-constant APP_ALREADY_EXISTS (err u208))
+(define-constant APP_DOESNT_EXISTS (err u209))
 
 ;; constants
 ;;
 (define-constant admin 'ST1PQHQKV0RJXZFY1DGX8MNSNYVE3VGZJSRTPGZGM)
+
+(define-constant radiology_principal 'STNHKEPYEPJ8ET55ZZ0M5A34J0R3N5FM2CMMMAZ6) ;;wallet 9
+(define-constant dentist_principal 'ST3PF13W7Z0RRM42A8VZRVFQ75SV1K26RXEP8YGKJ) ;; wallet 7
+(define-constant general_physician_principal 'ST3NBRSFKX28FQ2ZJ1MAKX58HKHSDGNV5N7R21XCP) ;; wallet 8
 
 
 ;; data maps and vars
@@ -61,11 +65,17 @@ false)))
 
 )
 
+(define-private (app_fee_transfer (recipient principal)) 
+
+(stx-transfer?  u100000000000000 tx-sender recipient)
+
+)
 ;; public functions
 ;;
 
 (map-set authorised_callers {address: 'ST3NBRSFKX28FQ2ZJ1MAKX58HKHSDGNV5N7R21XCP } {authorised: true})
 (map-set authorised_callers {address: 'ST1SJ3DTE5DN7X54YDH5D64R3BCB6A2AG2ZQ8YPD5 } {authorised: false})
+
 
 (define-public (add_authosrised_caller (address principal) (authorised bool))
 (begin
@@ -147,7 +157,7 @@ false)))
 
     (begin
         ;; makes sure patient is already registered
-        (asserts! (is-eq (is-none (map-get? patient_data {id: name}) ) true) PATIENT_DOESNT_EXISTS) 
+        (asserts! (is-eq (is-some (map-get? patient_data {id: name}) ) true) PATIENT_DOESNT_EXISTS) 
         
         ;; nested if statements to check which department is selected
         ;; if-1
@@ -161,9 +171,11 @@ false)))
             ;; checks if specific appointment number is already occupied or not
             (asserts!  (is-eq (is-none (map-get? radiology {appointment_number: app_num})) true) APP_ALREADY_EXISTS)
 
-            (map-set radiology {appointment_number: (var-get radiology_app_number)} {id: name, time: time, date: date})
+            
+            (map-set radiology {appointment_number: app_num} {id: name, time: time, date: date})
             (var-set radiology_app_number (+ (var-get radiology_app_number) u1))
-            (ok true)
+            (app_fee_transfer radiology_principal)
+            
         )
         ;; if-1 FALSE
         ;; if-2
@@ -177,9 +189,9 @@ false)))
             ;; checks if specific appointment number is already occupied or not
             (asserts!  (is-eq (is-none (map-get? dentist {appointment_number: app_num})) true) APP_ALREADY_EXISTS)
 
-            (map-set dentist {appointment_number: (var-get dentist_app_number)} {id: name, time: time, date: date})
+            (map-set dentist {appointment_number: app_num} {id: name, time: time, date: date})
             (var-set dentist_app_number (+ (var-get dentist_app_number) u1))
-            (ok true)   
+            (app_fee_transfer dentist_principal)
         )
         ;; if-3 FALSE
         ;; if-3
@@ -193,12 +205,12 @@ false)))
             ;; checks if specific appointment number is already occupied or not
             (asserts!  (is-eq (is-none (map-get? general_physician {appointment_number: app_num})) true) APP_ALREADY_EXISTS)
 
-            (map-set general_physician {appointment_number: (var-get general_physician_app_number)} {id: name, time: time, date: date})
+            (map-set general_physician {appointment_number: app_num} {id: name, time: time, date: date})
             (var-set general_physician_app_number (+ (var-get general_physician_app_number) u1))
-            (ok true)
+            (app_fee_transfer general_physician_principal)
         )
         ;; if-3 FALSE
-            (err "select a number between u0 - u2")
+            (err u210)
         ) ;; if-3 END
         ) ;; if-2 END
         ) ;; if-1 END
@@ -253,7 +265,7 @@ false)))
         )
 
         ;; if-3 FALSE
-            (err "select a number between u0 - u2")
+            (err u210)
         ) ;; if-3 END
         ) ;; if-2 END
         ) ;; if-1 END
