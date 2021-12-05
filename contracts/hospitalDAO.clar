@@ -67,7 +67,7 @@ false)))
 
 (define-private (app_fee_transfer (recipient principal)) 
 
-(stx-transfer?  u100000000000000 tx-sender recipient)
+(stx-transfer?  u99 tx-sender recipient)
 
 )
 ;; public functions
